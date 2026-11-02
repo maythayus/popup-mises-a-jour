@@ -1,14 +1,21 @@
 # Pop-up mises à jour matériel
 
-Petit pop-up Windows (PowerShell + WinForms) qui rappelle de vérifier les mises à jour de :
+Petit pop-up Windows (PowerShell + WinForms) qui vérifie si vos logiciels matériels sont à jour :
 
-| Application | Où trouver la mise à jour |
+| Application | Comment la dernière version est vérifiée |
 |---|---|
-| **NVIDIA app** (pilotes GeForce) | Pilotes > Rechercher des mises à jour |
-| **MSI Center** (Microsoft Store) + **MSI Companion** | Support > Live Update |
-| **Cooler Master MasterPlus** | Paramètres > Mise à jour (logiciel + firmware) |
+| **Pilote NVIDIA GeForce** | Service web officiel de NVIDIA (celui qu'utilise la NVIDIA app), pour votre carte exacte |
+| **MSI Center** (Microsoft Store) | Catalogue public du Microsoft Store |
+| **MSI Companion** (MSI Game Bar, Microsoft Store) | Catalogue public du Microsoft Store |
+| **Cooler Master MasterPlus** | Page officielle masterplus.coolermaster.com |
 
-Chaque application affiche sa version installée et un bouton **Ouvrir**. Le bouton **Tout ouvrir** lance les trois d'un coup.
+Chaque carte affiche un indicateur :
+
+- 🟢 **À jour** : la version installée est la dernière
+- 🔴 **Mise à jour disponible** : avec la version installée → la nouvelle version
+- 🟠 **Vérification impossible** : pas de connexion, application absente, etc.
+
+Les vérifications ne font que lire : rien n'est téléchargé ni installé automatiquement. Le bouton **Ouvrir** lance l'application pour faire la mise à jour, **Revérifier** relance les contrôles, **Tout ouvrir** lance toutes les applications.
 
 ## Utilisation
 
@@ -19,11 +26,11 @@ Cocher **Afficher au démarrage de Windows** pour que le pop-up s'ouvre à chaqu
 ## Chemins utilisés
 
 - `C:\Program Files\NVIDIA Corporation\NVIDIA app\CEF\NVIDIA App.exe`
-- MSI Center : détecté automatiquement via son paquet Microsoft Store (`Get-AppxPackage *MSICenter*`)
+- MSI Center et MSI Companion : détectés automatiquement via leur paquet Microsoft Store
 - `C:\Program Files (x86)\CoolerMaster\MasterPlus\MasterPlusApp.exe`
 
 Pour changer un chemin, modifier le tableau `$apps` en haut de `MisesAJour.ps1`.
 
 ## Prérequis
 
-Windows 10/11 avec Windows PowerShell 5.1 (inclus dans Windows).
+Windows 10/11 avec Windows PowerShell 5.1 (inclus dans Windows) et une connexion Internet pour les vérifications.

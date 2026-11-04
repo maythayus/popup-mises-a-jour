@@ -18,7 +18,9 @@ $apps = @(
        Chemin = 'C:\Program Files\Corsair\Corsair iCUE5 Software\iCUE.exe'
        Aide = 'iCUE > Paramètres > Mises à jour (logiciel + firmware)' }
     @{ Id = 'killer'; Nom = 'Intel Killer Performance Suite'; Couleur = '#0071C5'; Paquet = '*KillerControlCenter*'
-       Aide = 'Mise à jour via le Microsoft Store' }
+       Aide = 'Logiciel : Microsoft Store · Pilotes : Page Intel'
+       Lien = 'https://www.intel.fr/content/www/fr/fr/download/19779/intel-killer-performance-suite.html'
+       LienTexte = 'Page Intel' }
 )
 
 # Applications du Store : lancement via leur identifiant de paquet et d'application
@@ -192,6 +194,22 @@ foreach ($app in $apps) {
     $btn.Enabled = [bool]$app.Chemin -and ($app.Chemin -like 'shell:*' -or (Test-Path $app.Chemin))
     $btn.Add_Click({ Start-App $this.Tag })
     $panel.Controls.Add($btn)
+
+    # Lien vers la page officielle (dernière version), pour ce que le script ne peut pas vérifier seul
+    if ($app.Lien) {
+        $btn.Location = New-Object System.Drawing.Point(415, 9)
+        $btn.Size = New-Object System.Drawing.Size(90, 30)
+        $lien = New-Object System.Windows.Forms.Button
+        $lien.Text = $app.LienTexte
+        $lien.Location = New-Object System.Drawing.Point(415, 45)
+        $lien.Size = New-Object System.Drawing.Size(90, 30)
+        $lien.FlatStyle = 'Flat'
+        $lien.FlatAppearance.BorderColor = [System.Drawing.ColorTranslator]::FromHtml($app.Couleur)
+        $lien.BackColor = $fond
+        $lien.Tag = $app.Lien
+        $lien.Add_Click({ Start-Process $this.Tag })
+        $panel.Controls.Add($lien)
+    }
 
     $form.Controls.Add($panel)
     $y += 94

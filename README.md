@@ -9,7 +9,7 @@ Petit pop-up Windows (PowerShell + WinForms) qui vérifie si vos logiciels maté
 | **MSI Companion** (MSI Game Bar, Microsoft Store) | Catalogue public du Microsoft Store |
 | **Cooler Master MasterPlus** | Page officielle masterplus.coolermaster.com |
 | **Corsair iCUE** | Catalogue officiel winget (`Corsair.iCUE.5`), qui peut avoir quelques jours de retard sur Corsair |
-| **Intel Killer Performance Suite** (Microsoft Store) | Catalogue public du Microsoft Store |
+| **Intel Killer Performance Suite** (Microsoft Store) | Catalogue public du Microsoft Store pour le logiciel. Les pilotes Wi-Fi/Ethernet se vérifient avec le bouton **Page Intel** (page officielle, toujours sur la dernière version), car Intel bloque la lecture par script |
 
 Chaque carte affiche un indicateur :
 

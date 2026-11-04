@@ -1,4 +1,4 @@
-﻿# Pop-up des mises à jour : pilote NVIDIA, MSI Center, MSI Companion, Cooler Master MasterPlus
+﻿# Pop-up des mises à jour : pilote NVIDIA, MSI Center, MSI Companion, Cooler Master MasterPlus, Corsair iCUE, Intel Killer
 # Chaque carte affiche un indicateur : vert = à jour, rouge = mise à jour disponible, gris = vérification impossible
 Add-Type -AssemblyName System.Windows.Forms, System.Drawing
 [System.Windows.Forms.Application]::EnableVisualStyles()
@@ -14,14 +14,20 @@ $apps = @(
     @{ Id = 'masterplus'; Nom = 'Cooler Master MasterPlus'; Couleur = '#7A3CFF'
        Chemin = 'C:\Program Files (x86)\CoolerMaster\MasterPlus\MasterPlusApp.exe'
        Aide = 'Paramètres > Mise à jour (logiciel + firmware)' }
+    @{ Id = 'icue'; Nom = 'Corsair iCUE'; Couleur = '#FFD100'
+       Chemin = 'C:\Program Files\Corsair\Corsair iCUE5 Software\iCUE.exe'
+       Aide = 'iCUE > Paramètres > Mises à jour (logiciel + firmware)' }
+    @{ Id = 'killer'; Nom = 'Intel Killer Performance Suite'; Couleur = '#0071C5'; Paquet = '*KillerControlCenter*'
+       Aide = 'Mise à jour via le Microsoft Store' }
 )
 
-# Applications du Store : lancement via leur identifiant de paquet
+# Applications du Store : lancement via leur identifiant de paquet et d'application
 foreach ($app in $apps | Where-Object { $_.Paquet }) {
     $pkg = Get-AppxPackage -Name $app.Paquet -ErrorAction SilentlyContinue | Select-Object -First 1
     if ($pkg) {
-        $app.Famille = $pkg.PackageFamilyName
-        $app.Chemin = "shell:AppsFolder\$($pkg.PackageFamilyName)!App"
+        $appId = @((Get-AppxPackageManifest $pkg).Package.Applications.Application)[0].Id
+        if (-not $appId) { $appId = 'App' }
+        $app.Chemin = "shell:AppsFolder\$($pkg.PackageFamilyName)!$appId"
     }
 }
 
@@ -45,7 +51,7 @@ $verifications = {
                 $r = Invoke-RestMethod $url -TimeoutSec 20
                 $res.Dernier = $r.criteria.IsDispDriverNewer.latestDispDriverVersion
             }
-            { $_ -in 'msicenter', 'msicompanion' } {
+            { $_ -in 'msicenter', 'msicompanion', 'killer' } {
                 $pkg = Get-AppxPackage -Name $app.Paquet | Select-Object -First 1
                 if (-not $pkg) { throw 'Application non installée' }
                 $res.Installe = [string]$pkg.Version
@@ -62,6 +68,16 @@ $verifications = {
                 $res.Installe = if ($cle.DisplayVersion) { $cle.DisplayVersion } else { (Get-Item $app.Chemin).VersionInfo.ProductVersion }
                 $page = Invoke-WebRequest 'https://masterplus.coolermaster.com/' -UseBasicParsing -TimeoutSec 20 -UserAgent 'Mozilla/5.0'
                 if ($page.Content -match 'MASTERPLUS\+?\s*V\s*(\d+(?:\.\d+)+)') { $res.Dernier = $Matches[1] }
+            }
+            'icue' {
+                if (-not (Test-Path $app.Chemin)) { throw 'Application non installée' }
+                $cle = Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue |
+                    Where-Object DisplayName -eq 'Corsair iCUE5 Software' | Select-Object -First 1
+                $res.Installe = if ($cle.DisplayVersion) { $cle.DisplayVersion } else { (Get-Item $app.Chemin).VersionInfo.ProductVersion }
+                # Catalogue officiel winget (Corsair.iCUE.5), lu sur GitHub
+                $r = Invoke-RestMethod 'https://api.github.com/repos/microsoft/winget-pkgs/contents/manifests/c/Corsair/iCUE/5' -TimeoutSec 20 -UserAgent 'popup-mises-a-jour'
+                $versions = $r | Where-Object type -eq 'dir' | ForEach-Object { try { [version]$_.name } catch {} }
+                $res.Dernier = [string]($versions | Sort-Object -Descending | Select-Object -First 1)
             }
         }
         if (-not $res.Dernier) { throw 'Dernière version introuvable' }
@@ -102,7 +118,7 @@ function Set-Etat($app, $etat, $detail) {
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'Mises à jour matériel'
-$form.ClientSize = New-Object System.Drawing.Size(560, 520)
+$form.ClientSize = New-Object System.Drawing.Size(560, 700)
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false

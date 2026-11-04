@@ -8,6 +8,8 @@ Petit pop-up Windows (PowerShell + WinForms) qui vérifie si vos logiciels maté
 | **MSI Center** (Microsoft Store) | Catalogue public du Microsoft Store |
 | **MSI Companion** (MSI Game Bar, Microsoft Store) | Catalogue public du Microsoft Store |
 | **Cooler Master MasterPlus** | Page officielle masterplus.coolermaster.com |
+| **Corsair iCUE** | Catalogue officiel winget (`Corsair.iCUE.5`), qui peut avoir quelques jours de retard sur Corsair |
+| **Intel Killer Performance Suite** (Microsoft Store) | Catalogue public du Microsoft Store |
 
 Chaque carte affiche un indicateur :
 
@@ -26,8 +28,9 @@ Cocher **Afficher au démarrage de Windows** pour que le pop-up s'ouvre à chaqu
 ## Chemins utilisés
 
 - `C:\Program Files\NVIDIA Corporation\NVIDIA app\CEF\NVIDIA App.exe`
-- MSI Center et MSI Companion : détectés automatiquement via leur paquet Microsoft Store
+- MSI Center, MSI Companion et Intel Killer : détectés automatiquement via leur paquet Microsoft Store
 - `C:\Program Files (x86)\CoolerMaster\MasterPlus\MasterPlusApp.exe`
+- `C:\Program Files\Corsair\Corsair iCUE5 Software\iCUE.exe`
 
 Pour changer un chemin, modifier le tableau `$apps` en haut de `MisesAJour.ps1`.
 

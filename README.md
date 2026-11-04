@@ -21,7 +21,17 @@ Les vérifications ne font que lire : rien n'est téléchargé ni installé auto
 
 ## Utilisation
 
-Double-cliquer sur `MisesAJour.bat`.
+Double-cliquer sur `MisesAJour.exe` (ou sur `MisesAJour.bat`).
+
+## Construire l'exe
+
+`MisesAJour.exe` contient le script et le lance sans fenêtre de console. Pour le reconstruire après une modification de `MisesAJour.ps1` :
+
+```powershell
+powershell -ExecutionPolicy Bypass -File exe\Construire.ps1
+```
+
+Le script utilise le compilateur C# fourni avec Windows (.NET Framework 4), rien à installer.
 
 Cocher **Afficher au démarrage de Windows** pour que le pop-up s'ouvre à chaque démarrage (un raccourci est créé dans le dossier Démarrage ; décocher pour le supprimer). Si le dossier du projet est déplacé, décocher puis recocher la case.
 

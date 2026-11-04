@@ -255,9 +255,15 @@ $demarrage.Add_CheckedChanged({
     if ($this.Checked) {
         $wsh = New-Object -ComObject WScript.Shell
         $lnk = $wsh.CreateShortcut($raccourci)
-        $lnk.TargetPath = 'powershell.exe'
-        $lnk.Arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$PSCommandPath`""
-        $lnk.IconLocation = 'shell32.dll,238'
+        if ($env:MISES_A_JOUR_EXE) {
+            # Lancé depuis MisesAJour.exe : le raccourci pointe vers l'exe
+            $lnk.TargetPath = $env:MISES_A_JOUR_EXE
+            $lnk.IconLocation = "$env:MISES_A_JOUR_EXE,0"
+        } else {
+            $lnk.TargetPath = 'powershell.exe'
+            $lnk.Arguments = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$PSCommandPath`""
+            $lnk.IconLocation = 'shell32.dll,238'
+        }
         $lnk.Save()
     } elseif (Test-Path $raccourci) {
         Remove-Item $raccourci -Force

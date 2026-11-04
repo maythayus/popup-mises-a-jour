@@ -120,7 +120,7 @@ function Set-Etat($app, $etat, $detail) {
 
 $form = New-Object System.Windows.Forms.Form
 $form.Text = 'Mises à jour matériel'
-$form.ClientSize = New-Object System.Drawing.Size(560, 700)
+$form.ClientSize = New-Object System.Drawing.Size(560, 736)
 $form.StartPosition = 'CenterScreen'
 $form.FormBorderStyle = 'FixedDialog'
 $form.MaximizeBox = $false
@@ -266,7 +266,7 @@ $minuteur.Add_Tick({
 $demarrage = New-Object System.Windows.Forms.CheckBox
 $raccourci = Join-Path ([Environment]::GetFolderPath('Startup')) 'Mises a jour materiel.lnk'
 $demarrage.Text = 'Afficher au démarrage de Windows'
-$demarrage.Location = New-Object System.Drawing.Point(22, ($y + 12))
+$demarrage.Location = New-Object System.Drawing.Point(22, ($y + 2))
 $demarrage.AutoSize = $true
 $demarrage.Checked = Test-Path $raccourci
 $demarrage.Add_CheckedChanged({
@@ -291,7 +291,7 @@ $form.Controls.Add($demarrage)
 
 $revoir = New-Object System.Windows.Forms.Button
 $revoir.Text = 'Revérifier'
-$revoir.Location = New-Object System.Drawing.Point(240, ($y + 6))
+$revoir.Location = New-Object System.Drawing.Point(240, ($y + 38))
 $revoir.Size = New-Object System.Drawing.Size(95, 34)
 $revoir.FlatStyle = 'Flat'
 $revoir.BackColor = $carte
@@ -300,7 +300,7 @@ $form.Controls.Add($revoir)
 
 $tout = New-Object System.Windows.Forms.Button
 $tout.Text = 'Tout ouvrir'
-$tout.Location = New-Object System.Drawing.Point(345, ($y + 6))
+$tout.Location = New-Object System.Drawing.Point(345, ($y + 38))
 $tout.Size = New-Object System.Drawing.Size(100, 34)
 $tout.FlatStyle = 'Flat'
 $tout.BackColor = [System.Drawing.ColorTranslator]::FromHtml('#3A6FF7')
@@ -309,7 +309,7 @@ $form.Controls.Add($tout)
 
 $fermer = New-Object System.Windows.Forms.Button
 $fermer.Text = 'Plus tard'
-$fermer.Location = New-Object System.Drawing.Point(455, ($y + 6))
+$fermer.Location = New-Object System.Drawing.Point(455, ($y + 38))
 $fermer.Size = New-Object System.Drawing.Size(85, 34)
 $fermer.FlatStyle = 'Flat'
 $fermer.BackColor = $carte

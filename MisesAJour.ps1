@@ -62,6 +62,15 @@ $verifications = {
                 $versions = $r.Products.DisplaySkuAvailabilities.Sku.Properties.Packages.PackageFullName |
                     ForEach-Object { if ($_ -match '_(\d+\.\d+\.\d+\.\d+)_') { [version]$Matches[1] } }
                 $res.Dernier = [string]($versions | Sort-Object -Descending | Select-Object -First 1)
+                if ($app.Id -eq 'killer') {
+                    # Le pack Intel n'enregistre pas sa version : on la reconnaît au pilote Wi-Fi qu'il installe
+                    $packs = @{ '24.80.0.2' = '50.26.915.2621'; '24.70.0.3' = '50.26.820.2552'; '24.60.0.3' = '50.26.625.2482' }
+                    $wifi = Get-CimInstance Win32_PnPSignedDriver | Where-Object { $_.DeviceClass -eq 'NET' -and $_.DeviceName -match 'Killer.*Wi-?Fi' } | Select-Object -First 1
+                    if ($wifi) {
+                        $res.Info = if ($packs[$wifi.DriverVersion]) { "Pack Intel $($packs[$wifi.DriverVersion]) installé (Wi-Fi $($wifi.DriverVersion))" }
+                                    else { "Pilote Wi-Fi Killer $($wifi.DriverVersion)" }
+                    }
+                }
             }
             'masterplus' {
                 if (-not (Test-Path $app.Chemin)) { throw 'Application non installée' }
@@ -182,6 +191,7 @@ foreach ($app in $apps) {
     $aide.Location = New-Object System.Drawing.Point(48, 55)
     $aide.Size = New-Object System.Drawing.Size(355, 20)
     $panel.Controls.Add($aide)
+    $app.AideLabel = $aide
 
     $btn = New-Object System.Windows.Forms.Button
     $btn.Text = 'Ouvrir'
@@ -244,6 +254,7 @@ $minuteur.Add_Tick({
             'maj'   { Set-Etat $app 'maj' "v$($r.Installe) → v$($r.Dernier)" }
             default { Set-Etat $app 'inconnu' $r.Detail }
         }
+        if ($r.Info) { $app.AideLabel.Text = $r.Info }
     }
     if ($taches.Count -eq 0) {
         $minuteur.Stop()

@@ -23,6 +23,7 @@ Chaque carte affiche un indicateur :
 - 🟢 **À jour** : la version installée est la dernière
 - 🔴 **Mise à jour disponible** : avec la version installée → la nouvelle version
 - 🟠 **Vérification impossible** : pas de connexion, application absente, etc.
+- 🟠 **En attente d'Intel** (Killer uniquement) : le Store propose une version plus récente du logiciel, mais elle exige un composant Intel (`KillerNetworkComponent`) qui n'arrivera qu'avec un prochain pack Intel
 
 Les vérifications ne font que lire : rien n'est téléchargé ni installé automatiquement. Le bouton **Ouvrir** lance l'application pour faire la mise à jour, **Revérifier** relance les contrôles, **Tout ouvrir** lance toutes les applications.
 

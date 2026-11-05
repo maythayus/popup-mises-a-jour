@@ -54,14 +54,6 @@ $verifications = {
                 $res.Dernier = $r.criteria.IsDispDriverNewer.latestDispDriverVersion
             }
             { $_ -in 'msicenter', 'msicompanion', 'killer' } {
-                $pkg = Get-AppxPackage -Name $app.Paquet | Select-Object -First 1
-                if (-not $pkg) { throw 'Application non installée' }
-                $res.Installe = [string]$pkg.Version
-                $url = "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=PackageFamilyName&Value=$($pkg.PackageFamilyName)&market=FR&languages=fr-fr&fieldsTemplate=details"
-                $r = Invoke-RestMethod $url -TimeoutSec 20
-                $versions = $r.Products.DisplaySkuAvailabilities.Sku.Properties.Packages.PackageFullName |
-                    ForEach-Object { if ($_ -match '_(\d+\.\d+\.\d+\.\d+)_') { [version]$Matches[1] } }
-                $res.Dernier = [string]($versions | Sort-Object -Descending | Select-Object -First 1)
                 if ($app.Id -eq 'killer') {
                     # Le pack Intel n'enregistre pas sa version : on la reconnaît au pilote Wi-Fi qu'il installe
                     $packs = @{ '24.80.0.2' = '50.26.915.2621'; '24.70.0.3' = '50.26.820.2552'; '24.60.0.3' = '50.26.625.2482' }
@@ -70,7 +62,17 @@ $verifications = {
                         $res.Info = if ($packs[$wifi.DriverVersion]) { "Pack Intel $($packs[$wifi.DriverVersion]) installé (Wi-Fi $($wifi.DriverVersion))" }
                                     else { "Pilote Wi-Fi Killer $($wifi.DriverVersion)" }
                     }
+                    # Les versions récentes du logiciel exigent ce composant, qui n'arrive qu'avec un pack Intel
+                    $res.Composant = [bool](Get-ChildItem "$env:WINDIR\System32\DriverStore\FileRepository" -Directory -Filter '*killernetworkcomponent*' -ErrorAction SilentlyContinue)
                 }
+                $pkg = Get-AppxPackage -Name $app.Paquet | Select-Object -First 1
+                if (-not $pkg) { throw $(if ($app.Id -eq 'killer') { 'Logiciel absent : réinstaller le pack Intel' } else { 'Application non installée' }) }
+                $res.Installe = [string]$pkg.Version
+                $url = "https://displaycatalog.mp.microsoft.com/v7.0/products/lookup?alternateId=PackageFamilyName&Value=$($pkg.PackageFamilyName)&market=FR&languages=fr-fr&fieldsTemplate=details"
+                $r = Invoke-RestMethod $url -TimeoutSec 20
+                $versions = $r.Products.DisplaySkuAvailabilities.Sku.Properties.Packages.PackageFullName |
+                    ForEach-Object { if ($_ -match '_(\d+\.\d+\.\d+\.\d+)_') { [version]$Matches[1] } }
+                $res.Dernier = [string]($versions | Sort-Object -Descending | Select-Object -First 1)
             }
             'masterplus' {
                 if (-not (Test-Path $app.Chemin)) { throw 'Application non installée' }
@@ -93,6 +95,11 @@ $verifications = {
         }
         if (-not $res.Dernier) { throw 'Dernière version introuvable' }
         $res.Etat = if ([version]$res.Installe -ge [version]$res.Dernier) { 'ok' } else { 'maj' }
+        # Version Store impossible à installer tant qu'Intel n'a pas fourni le composant requis
+        if ($res.Etat -eq 'maj' -and $app.Id -eq 'killer' -and -not $res.Composant) {
+            $res.Etat = 'intel'
+            $res.Detail = "Store v$($res.Dernier) : nouveau pack requis"
+        }
     } catch {
         $res.Detail = $_.Exception.Message
     }
@@ -108,6 +115,7 @@ $etats  = @{
     ok      = @{ Couleur = '#2ECC71'; Texte = 'À jour' }
     maj     = @{ Couleur = '#E74C3C'; Texte = 'Mise à jour disponible' }
     inconnu = @{ Couleur = '#F39C12'; Texte = 'Vérification impossible' }
+    intel   = @{ Couleur = '#F39C12'; Texte = "En attente d'Intel" }
 }
 
 function Start-App($app) {
@@ -252,6 +260,7 @@ $minuteur.Add_Tick({
         switch ($r.Etat) {
             'ok'    { Set-Etat $app 'ok' "v$($r.Installe)" }
             'maj'   { Set-Etat $app 'maj' "v$($r.Installe) → v$($r.Dernier)" }
+            'intel' { Set-Etat $app 'intel' $r.Detail }
             default { Set-Etat $app 'inconnu' $r.Detail }
         }
         if ($r.Info) { $app.AideLabel.Text = $r.Info }
@@ -267,6 +276,9 @@ $minuteur.Add_Tick({
         } elseif ($nbInconnu) {
             $resume.Text = "$nbInconnu application(s) non vérifiée(s), le reste est à jour"
             $resume.ForeColor = [System.Drawing.ColorTranslator]::FromHtml($etats.inconnu.Couleur)
+        } elseif (@($apps | Where-Object { $_.Resultat.Etat -eq 'intel' }).Count) {
+            $resume.Text = "Tout est à jour, une mise à jour attend un nouveau pack Intel"
+            $resume.ForeColor = [System.Drawing.ColorTranslator]::FromHtml($etats.intel.Couleur)
         } else {
             $resume.Text = 'Tout est à jour'
             $resume.ForeColor = [System.Drawing.ColorTranslator]::FromHtml($etats.ok.Couleur)

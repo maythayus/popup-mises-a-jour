@@ -62,8 +62,13 @@ $verifications = {
                         $res.Info = if ($packs[$wifi.DriverVersion]) { "Pack Intel $($packs[$wifi.DriverVersion]) installé (Wi-Fi $($wifi.DriverVersion))" }
                                     else { "Pilote Wi-Fi Killer $($wifi.DriverVersion)" }
                     }
-                    # Les versions récentes du logiciel exigent ce composant, qui n'arrive qu'avec un pack Intel
-                    $res.Composant = [bool](Get-ChildItem "$env:WINDIR\System32\DriverStore\FileRepository" -Directory -Filter '*killernetworkcomponent*' -ErrorAction SilentlyContinue)
+                    # Le logiciel du Store exige le composant Intel de même version (ex. 50.26.915.262 pour 50.26.915.0),
+                    # qui n'arrive qu'avec un pack Intel : on lit sa version dans le magasin de pilotes
+                    $inf = Get-ChildItem "$env:WINDIR\System32\DriverStore\FileRepository" -Directory -Filter 'killernetworkcomponent.inf_*' -ErrorAction SilentlyContinue |
+                        ForEach-Object { Join-Path $_.FullName 'killernetworkcomponent.inf' } | Where-Object { Test-Path $_ }
+                    $res.Composant = $inf | ForEach-Object {
+                        if ((Get-Content $_ -Raw) -match 'DriverVer\s*=\s*[^,]+,\s*(\d+\.\d+\.\d+)') { [version]$Matches[1] }
+                    } | Sort-Object -Descending | Select-Object -First 1
                 }
                 $pkg = Get-AppxPackage -Name $app.Paquet | Select-Object -First 1
                 if (-not $pkg) { throw $(if ($app.Id -eq 'killer') { 'Logiciel absent : réinstaller le pack Intel' } else { 'Application non installée' }) }
@@ -96,7 +101,8 @@ $verifications = {
         if (-not $res.Dernier) { throw 'Dernière version introuvable' }
         $res.Etat = if ([version]$res.Installe -ge [version]$res.Dernier) { 'ok' } else { 'maj' }
         # Version Store impossible à installer tant qu'Intel n'a pas fourni le composant requis
-        if ($res.Etat -eq 'maj' -and $app.Id -eq 'killer' -and -not $res.Composant) {
+        $base = if ($res.Dernier -match '^(\d+\.\d+\.\d+)') { [version]$Matches[1] }
+        if ($res.Etat -eq 'maj' -and $app.Id -eq 'killer' -and (-not $res.Composant -or $res.Composant -lt $base)) {
             $res.Etat = 'intel'
             $res.Detail = "Store v$($res.Dernier) : nouveau pack requis"
         }

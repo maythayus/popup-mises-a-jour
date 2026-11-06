@@ -72,3 +72,7 @@ Windows 10/11 avec Windows PowerShell 5.1 (inclus dans Windows) et une connexion
 ## Marques déposées
 
 NVIDIA, GeForce, MSI, Cooler Master, MasterPlus, Corsair, iCUE, Intel et Killer sont des marques de leurs propriétaires respectifs. Ce projet est indépendant : il n'est ni affilié, ni approuvé, ni soutenu par ces sociétés. Les logos proviennent de [Simple Icons](https://simpleicons.org) et servent uniquement à identifier les logiciels pris en charge.
+
+## Licence
+
+Le code est sous licence [MIT](LICENSE). Elle ne couvre que le code de ce projet : les marques et logos cités ci-dessus restent à leurs propriétaires.
